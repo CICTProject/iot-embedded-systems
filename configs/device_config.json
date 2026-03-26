@@ -1,0 +1,6 @@
+{
+    "device_id": "esp32-007",
+    "location": {"x": 10, "y": 20, "z": 0},
+    "status": "active",
+    "services": ["camera", "temperature", "fan", "ota"]
+}
