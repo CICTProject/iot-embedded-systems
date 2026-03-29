@@ -1,0 +1,11 @@
+﻿{
+    "messages":  [
+                     {
+                         "content":  "What devices are available?",
+                         "role":  "user"
+                     }
+                 ],
+    "stream":  false,
+    "model":  "llm-agent-ollama",
+    "temperature":  0
+}

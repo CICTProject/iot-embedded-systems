@@ -10,7 +10,7 @@ from typing import Optional, Any
 from mcp.types import Tool, TextContent, ImageContent
 from . import mcp_server
 
-from utils.esp32cam import (
+from src.utils.esp32cam import (
     ESP32_DEFAULT_HOST,
     ESP32_DEFAULT_PORT,
     ESP32_ENDPOINTS,
@@ -21,7 +21,7 @@ from utils.esp32cam import (
     CAMERA_SATURATION
 )
 
-from utils.esp32cam import get_esp32_url
+from src.utils.esp32cam import get_esp32_url
 
 
 @mcp_server.tool()

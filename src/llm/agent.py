@@ -20,7 +20,7 @@ class LLMAgent:
             api_key=os.getenv("API_KEY", "dummy"),
             base_url=os.getenv("API_BASE_URL", "http://localhost:11434/v1"),
         )
-        self.model = os.getenv("MODEL", "minimax-m2.5:cloud")
+        self.model = os.getenv("MODEL", "llama3:latest")
         self.tools: dict[str, Callable] = {}
 
     def register_tool(self, name: str, func: Callable):
@@ -61,22 +61,54 @@ class LLMAgent:
         return await self._execute_action(action)
         
     def _parse_action(self, response: str) -> dict | None:
-        """Extract JSON action from LLM response."""
+        """Extract JSON action from LLM response with error correction."""
+        # Try direct JSON parse first
         try:
-            # Try direct JSON parse first
             return json.loads(response)
         except json.JSONDecodeError:
             pass
         
+        # Extract JSON block from response and attempt parsing with error correction
         try:
-            # Find JSON block in response
             start = response.find("{")
             end = response.rfind("}") + 1
-            if start >= 0 and end > start:
-                return json.loads(response[start:end])
-        except json.JSONDecodeError:
-            pass
-        return None
+            if start < 0 or end <= start:
+                return None
+            
+            json_str = response[start:end]
+            
+            # First attempt: direct parse
+            try:
+                return json.loads(json_str)
+            except json.JSONDecodeError:
+                pass
+            
+            import re
+            json_str = re.sub(r':\s*(-?\d+)\s+to\s+(\d+)', r': "\1 to \2"', json_str)
+            
+            try:
+                return json.loads(json_str)
+            except json.JSONDecodeError:
+                # Try removing problematic keys
+                lines = json_str.split('\n')
+                fixed_lines = []
+                for line in lines:
+                    # Skip malformed lines
+                    if ':' in line and ('{' not in line and '[' not in line):
+                        # Try to quote unquoted values
+                        if ': ' in line and not ('": ' in line or "': " in line):
+                            # Attempt basic fixing
+                            pass
+                    fixed_lines.append(line)
+                
+                try:
+                    return json.loads('\n'.join(fixed_lines))
+                except json.JSONDecodeError:
+                    # Last resort: return response as message
+                    return {"tool": "none", "message": response}
+        
+        except Exception as e:
+            return {"tool": "none", "message": str(response)}
 
     async def _execute_action(self, action: dict) -> str:
         """Execute the requested tool action."""

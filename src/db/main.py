@@ -6,8 +6,8 @@ Initializes InfluxDB with device registry and sensor data.
 import logging
 import sys
 
-from seed import initialize_database
-from database import close_db_client
+from src.db.seed import initialize_database
+from src.db.database import close_db_client
 
 
 def setup_logging() -> None:
@@ -35,7 +35,7 @@ def main() -> int:
         
         # Display results
         logger.info("Database initialization complete. Seeded %d devices.", len(devices))
-        
+
         return 0
         
     except Exception as e:

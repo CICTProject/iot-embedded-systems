@@ -6,7 +6,7 @@ authors = ["Huyen-Trang Le", "Massinissa Hamidi"]
 package-mode = false
 
 [tool.poetry.dependencies]
-python = ">=3.11.0,<3.15"
+python = ">=3.11.0,<3.13"
 python-dotenv = "1.0.0"
 httpx = "^0.28.1"
 mcp = "^1.26.0"
@@ -16,6 +16,7 @@ pyyaml = "^6.0"
 openai = "^1.0.0"
 influxdb-client = "^1.18.0"
 fastapi = "^0.109.0"
+ollama = "^0.4.0"
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md

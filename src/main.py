@@ -1,5 +1,6 @@
 import time
 import uuid
+import logging
 from typing import Any, List, Dict, Optional, Union
 
 from fastapi import FastAPI, HTTPException
@@ -7,14 +8,41 @@ from pydantic import BaseModel, ConfigDict
 
 from src.llm.agent import LLMAgent
 from src.mcp_server.tasks import mcp_server
-from utils.chat import extract_last_user_message, ChatMessage
+from src.utils.chat import extract_last_user_message, ChatMessage
 
 from fastapi.responses import StreamingResponse
 import json
 
+from src.mcp_server.tasks.system import get_deployment_status, get_network_topology, list_medical_devices, find_available_devices, get_device_details, query_devices_by_capability, read_medical_metric, read_multiple_medical_metrics, get_metric_history, get_active_deployment_alarms, acknowledge_deployment_alarm, execute_device_command
+from src.mcp_server.tasks.camera import capture_image, get_stream_url, save_camera_settings, load_camera_settings, save_and_load_image, check_esp32_connection
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 def create_agent() -> LLMAgent:
     agent = LLMAgent()
     agent.register_tools({
+        # System tools
+        "get_deployment_status": get_deployment_status,
+        "get_network_topology": get_network_topology,
+        "list_medical_devices": list_medical_devices,
+        "find_available_devices": find_available_devices,
+        "get_device_details": get_device_details,
+        "query_devices_by_capability": query_devices_by_capability,
+        "read_medical_metric": read_medical_metric,
+        "read_multiple_medical_metrics": read_multiple_medical_metrics,
+        "get_metric_history": get_metric_history,
+        "get_active_deployment_alarms": get_active_deployment_alarms,
+        "acknowledge_deployment_alarm": acknowledge_deployment_alarm,
+        "execute_device_command": execute_device_command,
+        # Camera tools
+        "capture_image": capture_image, 
+        "get_stream_url": get_stream_url,
+        "save_camera_settings": save_camera_settings,
+        "load_camera_settings": load_camera_settings,
+        "save_and_load_image": save_and_load_image,
+        "check_esp32_connection": check_esp32_connection,
     })
     return agent
 

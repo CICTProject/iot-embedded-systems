@@ -1,6 +1,6 @@
 # System-related tools for device registry and monitoring.
 from typing import Any, Dict, List, Optional
-from db.database import get_db_client
+from src.db.database import get_db_client
 
 import logging
 

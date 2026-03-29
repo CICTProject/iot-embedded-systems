@@ -12,13 +12,13 @@ from typing import Any, Dict, List
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.client.write.point import Point
 
-from models import (
+from src.db.models import (
     AlarmPriority,
     DeviceType,
     MedicalDevice,
     SensorKind,
 )
-from database import get_db_client
+from src.db.database import get_db_client
 
 
 
