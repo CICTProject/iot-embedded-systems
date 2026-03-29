@@ -28,6 +28,8 @@ iot-embedded-systems/
 ├── utils/                         # Utility tools
 ├── swagger.json                   # API specification docs
 ├── pyproject.toml                 # Poetry dependencies
+├── .python-version                # Python version
+├── uv.lock                        # WebUI package requirements
 └── .env.template                  # Environment variables
 ```
 
