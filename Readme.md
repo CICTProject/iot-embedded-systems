@@ -52,16 +52,16 @@ poetry run uvicorn src.main:app --host 0.0.0.0 --port 8001
 ```
 
 ---
-## Basic Flow: From LLM User Intent to ESP32 camera-based deployment control.
+## Basic Flow: From LLM User Intent to IOT device deployment control.
 The deployment monitoring agent (Figure 2) is responsible for maintaining an up-to-date data structure that records the status of each device and its connectivity. 
 ![Deployment Agent Workflow](docs/llm/workflow.png)
 
 ### 1. LLM to MCP (Tool Registration)
-- LLM Deployment Agent maintains real-time data structures for all deployed devices with unique identifiers. For each device, some information details such as registered microservices (`/camera`, `/sensor`, etc.), communication protocols (HTTP, MQTT, CoAP), and service-specific metadata (e.g., camera FoV, detection area, resolution, sampling frequency).
+- LLM Deployment Agent maintains real-time data structures for all deployed devices with unique identifiers. For each ESP32-based device, some information details such as registered microservices (`/camera`, `/sensor`, etc.), communication protocols (HTTP, MQTT, CoAP), and service-specific metadata (e.g., camera FoV, detection area, resolution, sampling frequency).
 
 - MCP Server tools are registered in the agent and correspond to network operations, current tools are, with full CRUD (create, read, update and delete) functionality.
 
-WebUI has supported 2 LLMs model (OpenAI, Ollama), implement FastAPIs to retrieve model & chat information, all the API docs in http://localhost:8001/docs#/ with the launching interface in http://localhost:8001 for local version, further deploy in Vercel.
+WebUI has supported 2 LLMs model (OpenAI, Ollama), implement FastAPIs to retrieve model & chat information with LLM agents, all the API docs in http://localhost:8001/docs#/ with the launching interface in http://localhost:8001 for local version, further deploy in Vercel.
 
 ![LLM Demo View](docs/demo/alpha101.webm)
 
@@ -71,9 +71,9 @@ WebUI has supported 2 LLMs model (OpenAI, Ollama), implement FastAPIs to retriev
 
 > **Note:** Some tools and API mappings are under development, see more in `src/mcp_server` for tool registration.
 
-### 3. ESP32-CAM Execution (Device layer)
+### 3. ESP32-based Execution (Device layer)
 
-- ESP32-CAM device receives deployment instructions, loads camera-based fall detection models, configures inference pipelines, and executes real-time monitoring workflows. Device details (IP address, device status (active, inactive, idle, sleep, deep sleep), location coordinates (x, y, z)) streamed back to FastAPI for SQLite database retrieve, with the implementations in `esp32/` for resource-constrained devices.
+- ESP32-based device (ESP32 CAM, ECG sensors) receives deployment instructions, loads camera-based fall detection models, configures inference pipelines, and executes real-time monitoring workflows. Device details (IP address, device status (active, inactive, idle, sleep, deep sleep), location coordinates (x, y, z)) streamed back to FastAPI for InfluxDB database retrieve, with the implementations in `esp32/` for resource-constrained devices.
 
 ---
 
@@ -101,11 +101,8 @@ WebUI has supported 2 LLMs model (OpenAI, Ollama), implement FastAPIs to retriev
 3. Integration with FastMCP via [langchain-mcp-adapters](https://github.com/langchain-ai/langchain-mcp-adapters)
 5. Pipx: [github.com/pypa/pipx](https://github.com/pypa/pipx)
 6. Poetry: [python-poetry.org/docs](https://python-poetry.org/docs)
-
+7. ESP32 CAM: [esp32cam.org/docs](https://hieromon.github.io/AutoConnect/esp32cam.html)
 ---
 ## Future Work
-1. Hazel 
 - Implement deployment algorithms & test case in camera-based scenarios.
-
-2. Massinissa
-- Monitoring workflow and implement prototype with Hazel.
+- Develop & Integrate with medical sensors & ESP32 CAM.

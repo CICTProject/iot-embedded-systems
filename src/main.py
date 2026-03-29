@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict
 
 from src.llm.agent import LLMAgent
 from src.mcp_server.tasks import mcp_server
-from utils.utils import extract_last_user_message
+from utils.chat_utils import extract_last_user_message
 
 from fastapi.responses import StreamingResponse
 import json

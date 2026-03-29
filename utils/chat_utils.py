@@ -36,3 +36,4 @@ def extract_last_user_message(messages: List[ChatMessage]) -> str:
                 return json.dumps(m.content)
     
     return ""
+
