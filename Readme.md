@@ -1,4 +1,4 @@
-# Large Language Models for the fall detection system deployment scenario in Nursing Home environment. 
+# LLMThings: Intelligent Large-Scale IoT Deployments in Nursing Home Environment. 
 
 
 ## Overview
@@ -25,7 +25,7 @@ iot-embedded-systems/
 │   ├── api/                       # FastAPI client
 │   └── db/                        # Database schema (SQLite)
 ├── test/                          # Unit tests
-├── tools/                         # Utility tools
+├── utils/                         # Utility tools
 ├── swagger.json                   # API specification docs
 ├── pyproject.toml                 # Poetry dependencies
 └── .env.template                  # Environment variables
