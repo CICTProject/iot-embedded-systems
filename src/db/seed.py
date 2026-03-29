@@ -18,7 +18,7 @@ from .models import (
     MedicalDevice,
     SensorKind,
 )
-from . import get_db_client
+from .database import get_db_client
 
 
 

@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 from . import mcp_server
 from db.models import DeviceType
 
-from utils.system_utils import (
+from utils.system import (
     get_device_from_registry,
     list_all_devices_from_registry,
     get_metric_readings

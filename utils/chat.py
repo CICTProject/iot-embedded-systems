@@ -1,12 +1,13 @@
 import json
 from typing import Any, List, Dict, Union
 
+from pydantic import BaseModel
 
-class ChatMessage:
-    """Simple ChatMessage representation for type hints"""
-    def __init__(self, role: str, content: Union[str, List[Dict[str, Any]]]):
-        self.role = role
-        self.content = content
+
+class ChatMessage(BaseModel):
+    """Chat message model for type hints and validation"""
+    role: str
+    content: Union[str, List[Dict[str, Any]]]
 
 
 def extract_last_user_message(messages: List[ChatMessage]) -> str:

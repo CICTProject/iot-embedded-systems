@@ -15,7 +15,6 @@ Each device is uniquely identified and must include:
     - x: float
     - y: float
     - z: float
-    - reference_frame: string (e.g., "building_A_floor_1")
 - connectivity:
     - online: boolean
     - last_seen: timestamp

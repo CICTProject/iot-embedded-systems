@@ -1,4 +1,8 @@
 .env
 .poetry.lock
-__pycache__/
 .webui_secret_key
+
+# Ignore database files and logs pychache in all subdirectories
+*.db
+*.log
+__pycache__/**/*

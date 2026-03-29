@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict
 
 from src.llm.agent import LLMAgent
 from src.mcp_server.tasks import mcp_server
-from utils.chat_utils import extract_last_user_message
+from utils.chat import extract_last_user_message, ChatMessage
 
 from fastapi.responses import StreamingResponse
 import json
@@ -18,10 +18,6 @@ def create_agent() -> LLMAgent:
     })
     return agent
 
-
-class ChatMessage(BaseModel):
-    role: str
-    content: Union[str, List[Dict[str, Any]]] 
 
 class ChatCompletionRequest(BaseModel):
     model_config = ConfigDict(extra="allow") # allow extra fields for flexibility

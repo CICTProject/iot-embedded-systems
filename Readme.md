@@ -40,7 +40,7 @@ iot-embedded-systems/
 # Dependencies installation fully pinned via poetry.lock (deployment lock standard)
 poetry install --no-root
 uv sync  # WebUI package 
-
+poetry run python src/db/main.py # Seed database mitigation (Future replacement with real-time iot device data)
 ```
 
 ### Running the Application (LLM User Intent)
@@ -50,6 +50,7 @@ uv sync  # WebUI package
 uv run --with open-webui open-webui serve
 poetry run uvicorn src.main:app --host 0.0.0.0 --port 8001
 ```
+> **Note:** Our project prioritizes the use of InfluxDB as it enables high-throughput ingestion, efficient storage, and time-based querying of large-scale time-series IOT device data with open UI web browser in http://localhost:8086.
 
 ---
 ## Basic Flow: From LLM User Intent to IOT device deployment control.
@@ -101,7 +102,9 @@ WebUI has supported 2 LLMs model (OpenAI, Ollama), implement FastAPIs to retriev
 3. Integration with FastMCP via [langchain-mcp-adapters](https://github.com/langchain-ai/langchain-mcp-adapters)
 5. Pipx: [github.com/pypa/pipx](https://github.com/pypa/pipx)
 6. Poetry: [python-poetry.org/docs](https://python-poetry.org/docs)
-7. ESP32 CAM: [esp32cam.org/docs](https://hieromon.github.io/AutoConnect/esp32cam.html)
+7. ESP32 CAM: [esp32cam.html/docs](https://hieromon.github.io/AutoConnect/esp32cam.html)
+8. Open WebUI: [openwebui.com/docs](https://docs.openwebui.com/getting-started/quick-start/)
+
 ---
 ## Future Work
 - Implement deployment algorithms & test case in camera-based scenarios.
