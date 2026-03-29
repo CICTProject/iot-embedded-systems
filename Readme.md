@@ -50,7 +50,13 @@ poetry run python src/db/main.py # Seed database mitigation (Future replacement 
 uv run --with open-webui open-webui serve
 poetry run uvicorn src.main:app --host 0.0.0.0 --port 8001
 ```
-> **Note:** Our project prioritizes the use of InfluxDB as it enables high-throughput ingestion, efficient storage, and time-based querying of large-scale time-series IOT device data with open UI web browser in http://localhost:8086.
+> **Note:** Our project prioritizes the use of InfluxDB as it enables high-throughput ingestion, efficient storage, and time-based querying of large-scale time-series IOT device data with open UI web browser in http://localhost:8086. Data query format in InfluxDB:
+
+```bash
+from(bucket: "medical_sensors")
+  |> range(start: -30d)
+  |> limit(n: 50)
+```
 
 ---
 ## Basic Flow: From LLM User Intent to IOT device deployment control.

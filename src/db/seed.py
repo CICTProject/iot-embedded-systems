@@ -12,13 +12,13 @@ from typing import Any, Dict, List
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.client.write.point import Point
 
-from .models import (
+from models import (
     AlarmPriority,
     DeviceType,
     MedicalDevice,
     SensorKind,
 )
-from .database import get_db_client
+from database import get_db_client
 
 
 
@@ -288,8 +288,8 @@ def seed_device_registry(devices: Dict[str, MedicalDevice]) -> None:
         )
         points.append(point)
 
-    write_api.write(bucket=db_client.bucket, write_buffer=points)
-    logger.info("Seeded %d devices to InfluxDB", len(points))
+    write_api.write(bucket=db_client.bucket, org=db_client.org, record=points)
+    logger.info("Seeded %d devices to InfluxDB for org=%s, bucket=%s", len(points), db_client.org, db_client.bucket)
 
 
 def seed_historical_data(devices: Dict[str, MedicalDevice]) -> None:
@@ -333,12 +333,12 @@ def seed_historical_data(devices: Dict[str, MedicalDevice]) -> None:
 
                 # Write in batches to avoid memory overhead
                 if len(points) >= batch_size:
-                    write_api.write(bucket=db_client.bucket, write_buffer=points)
+                    write_api.write(bucket=db_client.bucket, org=db_client.org, record=points)
                     points = []
 
     # Write remaining points
     if points:
-        write_api.write(bucket=db_client.bucket, write_buffer=points)
+        write_api.write(bucket=db_client.bucket, org=db_client.org, record=points)
 
     total_points = 72 * sum(
         len([svc for svc in d.services if svc["name"] in SensorKind._value2member_map_])

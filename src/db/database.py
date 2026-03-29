@@ -6,11 +6,12 @@ import logging
 import os
 from typing import Optional
 
+from dotenv import load_dotenv
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.client.influxdb_client import InfluxDBClient as InfluxClient
 
 logger = logging.getLogger(__name__)
-
+load_dotenv()  # Load environment variables 
 
 # InfluxDB client wrapper
 
@@ -41,10 +42,7 @@ class InfluxDBClient:
                 org=self.org,
             )
             logger.info(
-                "Connected to InfluxDB at %s (org=%s, bucket=%s)",
-                self.url,
-                self.org,
-                self.bucket,
+                f"Connected to InfluxDB at {self.url} (org={self.org}, bucket={self.bucket}, token={'****' if self.token else '(none)'})"
             )
         except ImportError:
             logger.error(
@@ -86,6 +84,7 @@ def get_db_client() -> InfluxDBClient:
     global _db_client
     if _db_client is None:
         _db_client = InfluxDBClient()
+    logger.info("Using InfluxDB client for org=%s, bucket=%s", _db_client.org, _db_client.bucket)
     return _db_client
 
 
