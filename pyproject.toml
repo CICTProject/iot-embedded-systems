@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "iot-embedded-systems"
+version = "0.1.1"
+description = "Simple LLM for IOT deployment network management in nursing home for patient fall detection scenario"
+authors = ["Huyen-Trang Le", "Massinissa Hamidi"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.11.0,<3.13"
+python-dotenv = "1.0.0"
+httpx = "^0.28.1"
+mcp = "^1.26.0"
+google-genai = "^1.63.0"
+aiofiles = "^23.2.1"
+pyyaml = "^6.0"
+openai = "^1.0.0"
+
+[tool.pyright]
+# https://github.com/microsoft/pyright/blob/main/docs/configuration.md
+useLibraryCodeForTypes = true
+exclude = [".cache"]
+
+# styling issue check 
+[tool.ruff]
+# https://beta.ruff.rs/docs/configuration/
+select = ['E', 'W', 'F', 'I', 'B', 'C4', 'ARG', 'SIM']
+ignore = ['W291', 'W292', 'W293']
+
+# python tool management depencies
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
