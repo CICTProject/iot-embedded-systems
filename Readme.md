@@ -71,7 +71,7 @@ The deployment monitoring agent (Figure 2) is responsible for maintaining an up-
 
 - MCP Server tools are registered in the agent and correspond to network operations, current tools are, with full CRUD (create, read, update and delete) functionality.
 
-WebUI has supported 2 LLMs model (OpenAI, Ollama), implement FastAPIs to retrieve model & chat information with LLM agents, all the API docs in http://localhost:8001/docs#/ with the launching interface in http://localhost:8001 for local version, further deploy in Vercel.
+Open WebUI (Future replacement with Shacdn256/Boostrap Fontend) has supported 2 LLMs model (OpenAI, Ollama), implement FastAPIs to retrieve model & chat information with LLM agents, all the API docs in http://localhost:8001/docs#/ with the launching interface in http://localhost:8001 for local version, further deploy in Vercel.
 
 ![LLM Demo View](docs/demo/alpha101.webm)
 *Prototype Alpha v1.0.1: Workflow Demo in IOT deployment scenario*
