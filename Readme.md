@@ -6,7 +6,8 @@
 Modern medical research laboratories have integrated gradually into smart workspace environments, with the integration of heterogeneous IoT devices and services [2,3]. Large Language Models (LLMs) have emphasized the capabilities in reasoning, planning, and task orchestration, providing a promising methodology for translating natural user intents into executable laboratory operations [4,5]. This project aims to develop an LLM-driven deployment engine [1,6] for medical research laboratories. The system (Figure 1) enables clinicians to interact with medical datasets, IoT-connected sequencing devices, and AI models through natural language queries, automating data retrieval, analysis, and workflow execution [7]. 
 
 ![Figure 1: Fall detection in nursing home scenario](docs/scenario/architecture.png)
-*Figure 1: Fall detection in nursing home scenario*
+*Figure 1: Fall detection in nursing home scenario.*
+
 ---
 
 ## Project Structure
@@ -64,7 +65,7 @@ from(bucket: "medical_sensors")
 ## Basic Flow: From LLM User Intent to IOT device deployment control.
 The deployment monitoring agent (Figure 2) is responsible for maintaining an up-to-date data structure that records the status of each device and its connectivity. 
 ![Deployment Agent Workflow](docs/llm/workflow.png)
-
+*Figure 2: IOT Deployment Agent Workflow with specific examples.*
 ### 1. LLM to MCP (Tool Registration)
 - LLM Deployment Agent maintains real-time data structures for all deployed devices with unique identifiers. For each ESP32-based device, some information details such as registered microservices (`/camera`, `/sensor`, etc.), communication protocols (HTTP, MQTT, CoAP), and service-specific metadata (e.g., camera FoV, detection area, resolution, sampling frequency).
 
@@ -73,7 +74,7 @@ The deployment monitoring agent (Figure 2) is responsible for maintaining an up-
 WebUI has supported 2 LLMs model (OpenAI, Ollama), implement FastAPIs to retrieve model & chat information with LLM agents, all the API docs in http://localhost:8001/docs#/ with the launching interface in http://localhost:8001 for local version, further deploy in Vercel.
 
 ![LLM Demo View](docs/demo/alpha101.webm)
-*Figure 1: Workflow Demo in IOT deployment scenario*
+*Prototype Alpha v1.0.1: Workflow Demo in IOT deployment scenario*
 ### 2. MCP to ESP32 (FastAPI Bridge)
 
 - MCP server (`src/mcp_server/`) receives tool calls from the agent and maps them to REST endpoints. FastAPI clients translate LLM-generated tool calls into HTTP requests targeting actual ESP32 devices via deployment endpoints (`/api/deploy`, `/api/control`, `/api/status`). All service details (**devices**, etc) documented in `swagger.json`.
