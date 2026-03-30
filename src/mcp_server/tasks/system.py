@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # Deployment status and topology
 
-@mcp_server.tool()
+@mcp_server.tool(name="get_deployment_status")
 async def get_deployment_status() -> Dict[str, Any]:
     """
     Get the overall status of the medical sensor deployment.
@@ -48,7 +48,7 @@ async def get_deployment_status() -> Dict[str, Any]:
     }
 
 
-@mcp_server.tool()
+@mcp_server.tool(name="get_network_topology")
 async def get_network_topology() -> Dict[str, Any]:
     """
     Get the network topology of the medical sensor deployment.
@@ -73,9 +73,9 @@ async def get_network_topology() -> Dict[str, Any]:
     }
 
 
-# ==================== DEVICE DISCOVERY ====================
+# Device discovery and querying
 
-@mcp_server.tool()
+@mcp_server.tool(name="list_medical_devices")
 async def list_medical_devices(
     zone: Optional[str] = None,
     device_type: Optional[str] = None,
@@ -106,7 +106,7 @@ async def list_medical_devices(
     return devices
 
 
-@mcp_server.tool()
+@mcp_server.tool(name="find_available_devices")
 async def find_available_devices(zone: str, required_service: str) -> List[Dict[str, Any]]:
     """
     Find online devices in a specific zone with a required service capability.
@@ -123,7 +123,7 @@ async def find_available_devices(zone: str, required_service: str) -> List[Dict[
     return await list_medical_devices(zone=zone, status="online")
 
 
-@mcp_server.tool()
+@mcp_server.tool(name="get_device_details")
 async def get_device_details(device_id: str) -> Dict[str, Any]:
     """
     Get detailed information about a specific device.
@@ -143,7 +143,7 @@ async def get_device_details(device_id: str) -> Dict[str, Any]:
     return device
 
 
-@mcp_server.tool()
+@mcp_server.tool(name="query_devices_by_capability")
 async def query_devices_by_capability(service_name: str) -> List[Dict[str, Any]]:
     """
     Find all online devices supporting a specific capability.
@@ -157,9 +157,9 @@ async def query_devices_by_capability(service_name: str) -> List[Dict[str, Any]]
     return await list_medical_devices(status="online")
 
 
-# ==================== MEDICAL METRIC READING ====================
+# Medical metric retrieval
 
-@mcp_server.tool()
+@mcp_server.tool(name="read_medical_metric")
 async def read_medical_metric(device_id: str, metric: str) -> Dict[str, Any]:
     """
     Read a medical metric from a sensor device.
@@ -197,7 +197,7 @@ async def read_medical_metric(device_id: str, metric: str) -> Dict[str, Any]:
     }
 
 
-@mcp_server.tool()
+@mcp_server.tool(name="read_multiple_medical_metrics")
 async def read_multiple_medical_metrics(
     requests: List[Dict[str, str]],
 ) -> List[Dict[str, Any]]:
@@ -216,6 +216,8 @@ async def read_multiple_medical_metrics(
         device_id = req.get("device_id")
         metric = req.get("metric")
         try:
+            if not device_id or not metric:
+                raise ValueError("device_id and metric are required")
             result = await read_medical_metric(device_id, metric)
             results.append(result)
         except Exception as exc:
@@ -229,9 +231,9 @@ async def read_multiple_medical_metrics(
     return results
 
 
-# ==================== METRIC HISTORY ====================
+# Metric history and aggregation
 
-@mcp_server.tool()
+@mcp_server.tool(name="get_metric_history")
 async def get_metric_history(
     device_id: str,
     hours: int = 24,
@@ -300,9 +302,9 @@ async def get_metric_history(
     return readings
 
 
-# Alarm management
+# Alarm management: Future development
 
-@mcp_server.tool()
+@mcp_server.tool(name="get_active_deployment_alarms")
 async def get_active_deployment_alarms(priority: Optional[str] = None) -> List[Dict[str, Any]]:
     """
     Get all active alarms in the medical deployment.
@@ -316,7 +318,7 @@ async def get_active_deployment_alarms(priority: Optional[str] = None) -> List[D
     return []
 
 
-@mcp_server.tool()
+@mcp_server.tool(name="acknowledge_deployment_alarm")
 async def acknowledge_deployment_alarm(alarm_id: str) -> bool:
     """
     Acknowledge and dismiss an active alarm.
@@ -330,9 +332,9 @@ async def acknowledge_deployment_alarm(alarm_id: str) -> bool:
     return False
 
 
-# Device control
+# Device control: Future development 
 
-@mcp_server.tool()
+@mcp_server.tool(name="execute_device_command")
 async def execute_device_command(
     device_id: str,
     command: str,

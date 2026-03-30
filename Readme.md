@@ -24,6 +24,7 @@ iot-embedded-systems/
 │   │   ├── main.py                # FastMCP server entry point
 │   │   └── tasks/                 # FastMCP server instance
 │   ├── api/                       # FastAPI client
+│   ├── iot/                       # ESP32-based sensors stimulation
 │   └── db/                        # Database schema (SQLite)
 ├── test/                          # Unit tests
 ├── utils/                         # Utility tools

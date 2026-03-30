@@ -1,3 +1,4 @@
+# Development in progress - not fully implemented yet
 """
 MCP Server tools for controlling ESP32 Camera module.
 Provides tools to capture images, stream live video, and manage camera settings.
@@ -24,7 +25,7 @@ from src.utils.esp32cam import (
 from src.utils.esp32cam import get_esp32_url
 
 
-@mcp_server.tool()
+@mcp_server.tool(name="capture_image")
 async def capture_image(
     host: Optional[str] = None,
     port: Optional[int] = None,
@@ -73,7 +74,7 @@ async def capture_image(
         return f"Error capturing image: {str(e)}"
 
 
-@mcp_server.tool()
+@mcp_server.tool(name="get_stream_url")
 async def get_stream_url(
     host: Optional[str] = None,
     port: Optional[int] = None,
@@ -97,7 +98,7 @@ async def get_stream_url(
     return f"MJPEG stream available at: {stream_url}"
 
 
-@mcp_server.tool()
+@mcp_server.tool(name="save_camera_settings")
 async def save_camera_settings(
     settings: dict[str, Any],
     host: Optional[str] = None,
@@ -141,7 +142,7 @@ async def save_camera_settings(
         return f"Error saving settings: {str(e)}"
 
 
-@mcp_server.tool()
+@mcp_server.tool(name="load_camera_settings")
 async def load_camera_settings(
     host: Optional[str] = None,
     port: Optional[int] = None,
@@ -180,7 +181,7 @@ async def load_camera_settings(
         return f"Error loading settings: {str(e)}"
 
 
-@mcp_server.tool()
+@mcp_server.tool(name="save_and_load_image")
 async def save_and_load_image(
     save_action: str,
     local_path: Optional[str] = None,
@@ -229,7 +230,7 @@ async def save_and_load_image(
         return f"Error in save/load operation: {str(e)}"
 
 
-@mcp_server.tool()
+@mcp_server.tool(name="check_esp32_connection")
 async def check_esp32_connection(
     host: Optional[str] = None,
     port: Optional[int] = None,
