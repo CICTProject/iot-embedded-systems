@@ -107,13 +107,25 @@ Open WebUI (Future replacement with Shacdn256/Boostrap Fontend) has supported 2 
 [7] Model Context Protocol (MCP): Landscape, Security Threats, and Future Research Directions. arXiv. Available: https://arxiv.org/pdf/2503.23278
 
 ### Code implementation ressources (Additional)
+#### MCP Server
 1. MCP SDK Integration: [modelcontextprotocol.io/docs/sdk](https://modelcontextprotocol.io/docs/sdk)
 2. MCP Learning Resources: [youtu.be/QIOk4XZ5XNU](https://youtu.be/QIOk4XZ5XNU)
 3. Integration with FastMCP via [langchain-mcp-adapters](https://github.com/langchain-ai/langchain-mcp-adapters)
-5. Pipx: [github.com/pypa/pipx](https://github.com/pypa/pipx)
-6. Poetry: [python-poetry.org/docs](https://python-poetry.org/docs)
-7. ESP32 CAM: [esp32cam.html/docs](https://hieromon.github.io/AutoConnect/esp32cam.html)
-8. Open WebUI: [openwebui.com/docs](https://docs.openwebui.com/getting-started/quick-start/)
+
+#### Real-time Database
+4. InfluxDB: [influx-iot-dev-guide](https://influxdata.github.io/iot-dev-guide/iot-center.html)
+5. REST API with InfluxDB: [iot-api-python](https://github.com/influxdata/iot-api-python)
+6. Sharding in Redis local server (Future development): [redis-influxdb-iot](https://github.com/Bienvenu2004/capteursIotRedis-InfluxDB)
+
+#### UI Package
+7. Pipx: [github.com/pypa/pipx](https://github.com/pypa/pipx)
+8. Poetry: [python-poetry.org/docs](https://python-poetry.org/docs)
+9. Open WebUI: [openwebui.com/docs](https://docs.openwebui.com/getting-started/quick-start/)
+
+### Hardware configuration
+10. ESP32 CAM: [esp32cam.html/docs](https://hieromon.github.io/AutoConnect/esp32cam.html)
+11. ESP3 CAM-MB-USB: [esp32camusb.com/docs](https://randomnerdtutorials.com/upload-code-esp32-cam-mb-usb/)
+12. ESP32 CAM Video Streaming: [esp32camfunctionality.com/docs](https://lastminuteengineers.com/getting-started-with-esp32-cam/)
 
 ---
 ## Future Work
