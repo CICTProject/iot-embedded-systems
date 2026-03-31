@@ -74,8 +74,9 @@ The deployment monitoring agent (Figure 2) is responsible for maintaining an up-
 
 Open WebUI (Future replacement with Shacdn256/Boostrap Fontend) has supported 2 LLMs model (OpenAI, Ollama), implement FastAPIs to retrieve model & chat information with LLM agents, all the API docs in http://localhost:8001/docs#/ with the launching interface in http://localhost:8001 for local version, further deploy in Vercel.
 
-![LLM Demo View](docs/demo/alpha101.webm)
+![LLM Demo View](https://ueve-my.sharepoint.com/:v:/g/personal/20245468_etud_univ-evry_fr/IQDGlCxz5USrR4NqVH86peXdASAXJYb76KFQacRpcFyRCgs?e=rspRPC)
 *Prototype Alpha v1.0.1: Workflow Demo in IOT deployment scenario*
+
 ### 2. MCP to ESP32 (FastAPI Bridge)
 
 - MCP server (`src/mcp_server/`) receives tool calls from the agent and maps them to REST endpoints. FastAPI clients translate LLM-generated tool calls into HTTP requests targeting actual ESP32 devices via deployment endpoints (`/api/deploy`, `/api/control`, `/api/status`). All service details (**devices**, etc) documented in `swagger.json`.
