@@ -22,7 +22,7 @@ struct CameraState {
   bool isFlashOn    = false;
   bool isSdMounted  = false;
   bool shouldReboot = false;
-  uint32_t saveCounter = 0;  // incremented each save to guarantee unique filenames
+  uint32_t saveCounter = 0;  
 } camState;
 
 const int FLASH_PIN = 4;
@@ -153,7 +153,6 @@ void handlePostCameraControl() {
 // POST: /api/camera/reboot
 void handlePostReboot() {
   portal.host().send(200, "application/json", "{\"message\":\"Rebooting\"}");
-  // Set flag; actual restart is deferred to loop() so the response is flushed first
   camState.shouldReboot = true;
 }
 
@@ -174,14 +173,12 @@ void handlePostSDSave() {
     return;
   }
 
-  // Use actual frame size (x2 safety margin) instead of a hardcoded constant
   if (!checkSDFreeSpace(fb->len * 2)) {
     esp_camera_fb_return(fb);
     portal.host().send(500, "application/json", "{\"error\":\"SD full\"}");
     return;
   }
 
-  // Combine counter + millis to avoid name collisions even after reboot
   camState.saveCounter++;
   String path = "/img_" + String(camState.saveCounter) + "_" + String(millis()) + ".jpg";
 
@@ -193,7 +190,7 @@ void handlePostSDSave() {
   }
 
   size_t written     = file.write(fb->buf, fb->len);
-  size_t expectedLen = fb->len;  // capture before fb is released
+  size_t expectedLen = fb->len;  
   file.close();
   esp_camera_fb_return(fb);
 
