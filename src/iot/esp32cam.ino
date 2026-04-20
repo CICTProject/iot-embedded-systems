@@ -446,7 +446,6 @@ bool setupSD() {
   LOG_SD("Mounted | Type=" + String(SD_MMC.cardType())
          + " | Size=" + String(SD_MMC.cardSize() / (1024 * 1024)) + " MB");
 
-  // Tạo thư mục images nếu chưa có
   if (!SD_MMC.exists(SD_IMAGE_DIR)) {
     SD_MMC.mkdir(SD_IMAGE_DIR);
     LOG_SD("Created dir " + String(SD_IMAGE_DIR));
