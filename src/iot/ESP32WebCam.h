@@ -33,7 +33,6 @@ namespace ESP32Cam {
 }
 
 static esp_err_t capture_handler(httpd_req_t* req) {
-    // Kiểm tra active flag nếu context được truyền vào
     auto* ctx = reinterpret_cast<StreamContext*>(req->user_ctx);
     if (ctx && ctx->isActive && !(*ctx->isActive)) {
         httpd_resp_set_status(req, "403 Forbidden");
