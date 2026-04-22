@@ -8,6 +8,8 @@ WiFi Connected! IP: 192.168.1.327
 API Endpoint: http://192.168.1.327/api/mpu
 ```
 
+> [!TIP]
+> All available ESP32 Camera Service APIs in swagger.json file with detailed variables & services.
 ### 2. Fetch Data from API
 Use the `requests` library in Python to call the API:
 

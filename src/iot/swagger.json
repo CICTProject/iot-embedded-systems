@@ -1,0 +1,611 @@
+{
+	"openapi": "3.0.3",
+	"info": {
+		"title": "ESP32 Camera Service API",
+		"version": "1.0.0",
+		"description": "REST API exposed by ESP32-CAM firmware for camera metadata, camera control, reboot, and SD card operations."
+	},
+	"servers": [
+		{
+			"url": "http://{device_ip}",
+			"description": "ESP32 device base URL",
+			"variables": {
+				"device_ip": {
+					"default": "192.168.1.100",
+					"description": "IPv4 address of the ESP32 device"
+				}
+			}
+		}
+	],
+	"tags": [
+		{
+			"name": "Camera",
+			"description": "Camera metadata and runtime configuration"
+		},
+		{
+			"name": "System",
+			"description": "System-level actions"
+		},
+		{
+			"name": "SD Card",
+			"description": "SD card capture and file management"
+		}
+	],
+	"paths": {
+		"/api/camera": {
+			"get": {
+				"tags": [
+					"Camera"
+				],
+				"summary": "Get camera metadata",
+				"description": "Returns current device status, camera configuration, and useful endpoint links.",
+				"operationId": "getCameraMetadata",
+				"responses": {
+					"200": {
+						"description": "Camera metadata",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CameraMetadataResponse"
+								},
+								"examples": {
+									"ok": {
+										"value": {
+											"device_id": "camera_01",
+											"status": "active",
+											"flash": "off",
+											"sd_card": "mounted",
+											"sd_total": 15728640,
+											"sd_used": 589824,
+											"current_config": {
+												"framesize": "VGA",
+												"quality": 12,
+												"brightness": 0,
+												"contrast": 0,
+												"vflip": 0,
+												"hmirror": 0
+											},
+											"endpoints": {
+												"stream": "http://192.168.1.100:81/_stream",
+												"capture": "http://192.168.1.100:81/_capture",
+												"control": "http://192.168.1.100/api/camera/control (POST)",
+												"reboot": "http://192.168.1.100/api/camera/reboot (POST)",
+												"sd_save": "http://192.168.1.100/api/camera/sdcard/save (POST)",
+												"sd_list": "http://192.168.1.100/api/camera/sdcard/list (GET)"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/camera/control": {
+			"post": {
+				"tags": [
+					"Camera"
+				],
+				"summary": "Update camera configuration",
+				"description": "Updates camera activity, flash, and sensor parameters. All fields are optional and only provided fields are updated.",
+				"operationId": "updateCameraConfig",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CameraControlRequest"
+							},
+							"examples": {
+								"basic": {
+									"value": {
+										"active": true,
+										"flash": "on"
+									}
+								},
+								"full": {
+									"value": {
+										"active": true,
+										"flash": "off",
+										"framesize": "SVGA",
+										"quality": 15,
+										"brightness": 1,
+										"contrast": -1,
+										"vflip": false,
+										"hmirror": true
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Configuration updated",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MessageResponse"
+								},
+								"example": {
+									"message": "Configuration updated"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request body",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								},
+								"examples": {
+									"missingBody": {
+										"value": {
+											"error": "Missing JSON body"
+										}
+									},
+									"invalidJson": {
+										"value": {
+											"error": "Invalid JSON"
+										}
+									}
+								}
+							}
+						}
+					},
+					"413": {
+						"description": "Payload too large",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								},
+								"example": {
+									"error": "Request body too large"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Sensor unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								},
+								"example": {
+									"error": "Sensor not available"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/camera/reboot": {
+			"post": {
+				"tags": [
+					"System"
+				],
+				"summary": "Reboot device",
+				"description": "Queues a reboot request. The firmware responds immediately and reboots shortly after.",
+				"operationId": "rebootDevice",
+				"responses": {
+					"200": {
+						"description": "Reboot accepted",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MessageResponse"
+								},
+								"example": {
+									"message": "Rebooting"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/camera/sdcard/save": {
+			"post": {
+				"tags": [
+					"SD Card"
+				],
+				"summary": "Capture and save image to SD card",
+				"description": "Captures one frame and writes it to SD card as a JPEG file.",
+				"operationId": "saveSnapshotToSd",
+				"responses": {
+					"200": {
+						"description": "Image saved",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SaveImageResponse"
+								},
+								"example": {
+									"message": "Saved",
+									"filename": "/img_12_635400.jpg",
+									"size": 68231
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Camera disabled",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								},
+								"example": {
+									"error": "Camera disabled"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Device/SD error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								},
+								"examples": {
+									"sdNotMounted": {
+										"value": {
+											"error": "SD not mounted"
+										}
+									},
+									"captureFailed": {
+										"value": {
+											"error": "Capture failed"
+										}
+									},
+									"sdFull": {
+										"value": {
+											"error": "SD full"
+										}
+									},
+									"fileOpenFailed": {
+										"value": {
+											"error": "File open failed"
+										}
+									},
+									"writeIncomplete": {
+										"value": {
+											"error": "Write incomplete"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/camera/sdcard/list": {
+			"get": {
+				"tags": [
+					"SD Card"
+				],
+				"summary": "List files on SD card",
+				"description": "Returns up to 20 files from SD root directory.",
+				"operationId": "listSdFiles",
+				"responses": {
+					"200": {
+						"description": "File list",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SdListResponse"
+								},
+								"example": {
+									"files": [
+										{
+											"name": "/img_1_123456.jpg",
+											"size": 68102
+										},
+										{
+											"name": "/img_2_124876.jpg",
+											"size": 67220
+										}
+									],
+									"count": 2,
+									"truncated": false
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "SD error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								},
+								"examples": {
+									"sdNotMounted": {
+										"value": {
+											"error": "SD not mounted"
+										}
+									},
+									"openRootFailed": {
+										"value": {
+											"error": "Open root failed"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"CameraConfig": {
+				"type": "object",
+				"properties": {
+					"framesize": {
+						"type": "string",
+						"enum": [
+							"QQVGA",
+							"QVGA",
+							"VGA",
+							"SVGA",
+							"XGA",
+							"SXGA",
+							"UXGA"
+						]
+					},
+					"quality": {
+						"type": "integer",
+						"minimum": 10,
+						"maximum": 63
+					},
+					"brightness": {
+						"type": "integer",
+						"minimum": -2,
+						"maximum": 2
+					},
+					"contrast": {
+						"type": "integer",
+						"minimum": -2,
+						"maximum": 2
+					},
+					"vflip": {
+						"type": "integer",
+						"enum": [
+							0,
+							1
+						]
+					},
+					"hmirror": {
+						"type": "integer",
+						"enum": [
+							0,
+							1
+						]
+					}
+				}
+			},
+			"CameraMetadataEndpoints": {
+				"type": "object",
+				"properties": {
+					"stream": {
+						"type": "string"
+					},
+					"capture": {
+						"type": "string"
+					},
+					"control": {
+						"type": "string"
+					},
+					"reboot": {
+						"type": "string"
+					},
+					"sd_save": {
+						"type": "string"
+					},
+					"sd_list": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"stream",
+					"capture",
+					"control",
+					"reboot",
+					"sd_save",
+					"sd_list"
+				]
+			},
+			"CameraMetadataResponse": {
+				"type": "object",
+				"properties": {
+					"device_id": {
+						"type": "string"
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"active",
+							"disabled"
+						]
+					},
+					"flash": {
+						"type": "string",
+						"enum": [
+							"on",
+							"off"
+						]
+					},
+					"sd_card": {
+						"type": "string",
+						"enum": [
+							"mounted",
+							"not_found"
+						]
+					},
+					"sd_total": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"sd_used": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"current_config": {
+						"$ref": "#/components/schemas/CameraConfig"
+					},
+					"endpoints": {
+						"$ref": "#/components/schemas/CameraMetadataEndpoints"
+					}
+				},
+				"required": [
+					"device_id",
+					"status",
+					"flash",
+					"sd_card",
+					"endpoints"
+				]
+			},
+			"CameraControlRequest": {
+				"type": "object",
+				"properties": {
+					"active": {
+						"type": "boolean",
+						"description": "Enable or disable camera service"
+					},
+					"flash": {
+						"type": "string",
+						"enum": [
+							"on",
+							"off"
+						]
+					},
+					"framesize": {
+						"type": "string",
+						"enum": [
+							"QQVGA",
+							"QVGA",
+							"VGA",
+							"SVGA",
+							"XGA",
+							"SXGA",
+							"UXGA"
+						]
+					},
+					"quality": {
+						"type": "integer",
+						"minimum": 10,
+						"maximum": 63
+					},
+					"brightness": {
+						"type": "integer",
+						"minimum": -2,
+						"maximum": 2
+					},
+					"contrast": {
+						"type": "integer",
+						"minimum": -2,
+						"maximum": 2
+					},
+					"vflip": {
+						"type": "boolean"
+					},
+					"hmirror": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false
+			},
+			"MessageResponse": {
+				"type": "object",
+				"properties": {
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"message"
+				]
+			},
+			"ErrorResponse": {
+				"type": "object",
+				"properties": {
+					"error": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"error"
+				]
+			},
+			"SaveImageResponse": {
+				"type": "object",
+				"properties": {
+					"message": {
+						"type": "string",
+						"example": "Saved"
+					},
+					"filename": {
+						"type": "string"
+					},
+					"size": {
+						"type": "integer"
+					}
+				},
+				"required": [
+					"message",
+					"filename",
+					"size"
+				]
+			},
+			"SdFile": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"size": {
+						"type": "integer"
+					}
+				},
+				"required": [
+					"name",
+					"size"
+				]
+			},
+			"SdListResponse": {
+				"type": "object",
+				"properties": {
+					"files": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/SdFile"
+						}
+					},
+					"count": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 20
+					},
+					"truncated": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"files",
+					"count",
+					"truncated"
+				]
+			}
+		}
+	}
+}
