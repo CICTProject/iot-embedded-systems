@@ -1,7 +1,7 @@
 # Development in progress - not fully implemented yet
 """
 MCP Server tools for controlling ESP32 Camera module.
-Provides tools to capture images, stream live video, and manage camera settings.
+Provides tools to capture images, stream live video, manage settings, and SD card operations.
 """
 
 import httpx
@@ -23,6 +23,97 @@ from src.utils.esp32cam import (
 )
 
 from src.utils.esp32cam import get_esp32_url
+
+
+@mcp_server.tool(name="get_camera_metadata")
+async def get_camera_metadata(
+    host: Optional[str] = None,
+    port: Optional[int] = None,
+) -> str:
+    """
+    Get current camera metadata and status including device info, settings, and endpoints.
+    
+    Args:
+        host: ESP32 device IP address (default: 192.168.1.100)
+        port: ESP32 web server port (default: 80)
+        
+    Returns:
+        JSON string containing camera metadata, current configuration, and available endpoints
+    """
+    if host is None:
+        host = ESP32_DEFAULT_HOST
+    if port is None:
+        port = ESP32_DEFAULT_PORT
+    
+    url = get_esp32_url(host, port) + ESP32_ENDPOINTS["metadata"]
+    
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.get(url)
+            response.raise_for_status()
+            
+            metadata = response.json()
+            return json.dumps(metadata, indent=2)
+            
+    except httpx.ConnectError:
+        return f"Error: Cannot connect to ESP32 camera at {host}:{port}"
+    except httpx.HTTPStatusError as e:
+        return f"Error: HTTP {e.response.status_code} from ESP32 camera"
+    except Exception as e:
+        return f"Error fetching metadata: {str(e)}"
+
+
+@mcp_server.tool(name="control_camera")
+async def control_camera(
+    settings: dict[str, Any],
+    host: Optional[str] = None,
+    port: Optional[int] = None,
+) -> str:
+    """
+    Control camera settings like resolution, quality, brightness, contrast, and flash.
+    
+    Args:
+        settings: Dictionary of camera settings to update. Supported keys:
+            - active: bool (enable/disable camera)
+            - flash: "on" or "off" (control flash LED)
+            - framesize: string (QQVGA, QVGA, VGA, SVGA, XGA, SXGA, UXGA)
+            - quality: int (10-63, lower = better quality)
+            - brightness: int (-2 to 2)
+            - contrast: int (-2 to 2)
+            - vflip: bool (vertical flip)
+            - hmirror: bool (horizontal mirror)
+            Example: {"framesize": "VGA", "quality": 12, "brightness": 1}
+        host: ESP32 device IP address (default: 192.168.1.100)
+        port: ESP32 web server port (default: 80)
+        
+    Returns:
+        Status message confirming settings were applied
+    """
+    if host is None:
+        host = ESP32_DEFAULT_HOST
+    if port is None:
+        port = ESP32_DEFAULT_PORT
+    
+    url = get_esp32_url(host, port) + ESP32_ENDPOINTS["control"]
+    
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.post(
+                url,
+                json=settings,
+                headers={"Content-Type": "application/json"}
+            )
+            response.raise_for_status()
+            
+            result = response.json()
+            return json.dumps(result, indent=2)
+            
+    except httpx.ConnectError:
+        return f"Error: Cannot connect to ESP32 camera at {host}:{port}"
+    except httpx.HTTPStatusError as e:
+        return f"Error: HTTP {e.response.status_code} from ESP32 camera"
+    except Exception as e:
+        return f"Error controlling camera: {str(e)}"
 
 
 @mcp_server.tool(name="capture_image")
@@ -98,136 +189,125 @@ async def get_stream_url(
     return f"MJPEG stream available at: {stream_url}"
 
 
-@mcp_server.tool(name="save_camera_settings")
-async def save_camera_settings(
-    settings: dict[str, Any],
+@mcp_server.tool(name="save_image_to_sdcard")
+async def save_image_to_sdcard(
     host: Optional[str] = None,
     port: Optional[int] = None,
 ) -> str:
     """
-    Save camera sensor settings to the ESP32 device.
+    Capture and save current image to SD card on the ESP32 device.
     
     Args:
-        settings: Dictionary of camera settings (e.g., resolution, brightness, contrast)
-                 Example: {"framesize": 6, "quality": 12, "brightness": 1}
         host: ESP32 device IP address (default: 192.168.1.100)
         port: ESP32 web server port (default: 80)
         
     Returns:
-        Status message confirming settings were saved
+        Status message with filename and size information
     """
     if host is None:
         host = ESP32_DEFAULT_HOST
     if port is None:
         port = ESP32_DEFAULT_PORT
     
-    url = get_esp32_url(host, port) + ESP32_ENDPOINTS["prompt"]
+    url = get_esp32_url(host, port) + ESP32_ENDPOINTS["sdcard_save"]
     
     try:
         async with httpx.AsyncClient(timeout=30) as client:
-            # Send settings as POST request
-            response = await client.post(
-                url,
-                json={"action": "save_settings", "settings": settings}
-            )
+            response = await client.post(url)
             response.raise_for_status()
             
-            return f"Camera settings saved successfully: {json.dumps(settings)}"
+            result = response.json()
+            return json.dumps(result, indent=2)
             
     except httpx.ConnectError:
         return f"Error: Cannot connect to ESP32 camera at {host}:{port}"
     except httpx.HTTPStatusError as e:
+        if e.response.status_code == 403:
+            return "Error: Camera is disabled"
+        elif e.response.status_code == 500:
+            return "Error: SD card not mounted or capture failed"
         return f"Error: HTTP {e.response.status_code} from ESP32 camera"
     except Exception as e:
-        return f"Error saving settings: {str(e)}"
+        return f"Error saving image to SD card: {str(e)}"
 
 
-@mcp_server.tool(name="load_camera_settings")
-async def load_camera_settings(
+@mcp_server.tool(name="list_sdcard_files")
+async def list_sdcard_files(
     host: Optional[str] = None,
     port: Optional[int] = None,
 ) -> str:
     """
-    Load current camera sensor settings from the ESP32 device.
+    List all files stored on the SD card of the ESP32 device.
     
     Args:
         host: ESP32 device IP address (default: 192.168.1.100)
         port: ESP32 web server port (default: 80)
         
     Returns:
-        JSON string containing current camera settings
+        JSON listing of files with names, sizes, and truncation status
     """
     if host is None:
         host = ESP32_DEFAULT_HOST
     if port is None:
         port = ESP32_DEFAULT_PORT
     
-    url = get_esp32_url(host, port) + ESP32_ENDPOINTS["prompt"]
+    url = get_esp32_url(host, port) + ESP32_ENDPOINTS["sdcard_list"]
     
     try:
         async with httpx.AsyncClient(timeout=30) as client:
-            # Fetch settings as GET request
             response = await client.get(url)
             response.raise_for_status()
             
-            settings = response.json()
-            return json.dumps(settings, indent=2)
+            result = response.json()
+            return json.dumps(result, indent=2)
             
     except httpx.ConnectError:
         return f"Error: Cannot connect to ESP32 camera at {host}:{port}"
     except httpx.HTTPStatusError as e:
+        if e.response.status_code == 500:
+            return "Error: SD card not mounted"
         return f"Error: HTTP {e.response.status_code} from ESP32 camera"
     except Exception as e:
-        return f"Error loading settings: {str(e)}"
+        return f"Error listing SD card files: {str(e)}"
 
 
-@mcp_server.tool(name="save_and_load_image")
-async def save_and_load_image(
-    save_action: str,
-    local_path: Optional[str] = None,
+@mcp_server.tool(name="reboot_device")
+async def reboot_device(
     host: Optional[str] = None,
     port: Optional[int] = None,
 ) -> str:
     """
-    Save current captured image or load a previously captured image from ESP32.
+    Reboot the ESP32 camera device.
     
     Args:
-        save_action: "save" to save current image, "load" to load previous image
-        local_path: Local file path for saving or reference to previously saved image
         host: ESP32 device IP address (default: 192.168.1.100)
         port: ESP32 web server port (default: 80)
         
     Returns:
-        Status message with operation result
+        Confirmation message that reboot has been initiated
     """
     if host is None:
         host = ESP32_DEFAULT_HOST
     if port is None:
         port = ESP32_DEFAULT_PORT
     
-    url = get_esp32_url(host, port) + ESP32_ENDPOINTS["prompt"]
+    url = get_esp32_url(host, port) + ESP32_ENDPOINTS["reboot"]
     
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            payload = {
-                "action": save_action,
-                "path": local_path
-            }
-            
-            response = await client.post(url, json=payload)
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.post(url)
             response.raise_for_status()
             
-            if save_action == "save":
-                return f"Image saved to ESP32 storage at: {local_path}"
-            else:
-                return f"Image loaded from ESP32 storage: {local_path}"
-                
+            result = response.json()
+            return json.dumps(result, indent=2)
+            
     except httpx.ConnectError:
         return f"Error: Cannot connect to ESP32 camera at {host}:{port}"
-    except httpx.HTTPStatusError as e:
-        return f"Error: HTTP {e.response.status_code} from ESP32 camera"
+    except httpx.TimeoutException:
+        # Timeout is expected as device reboots immediately
+        return "Device reboot initiated (connection timeout expected)"
     except Exception as e:
-        return f"Error in save/load operation: {str(e)}"
+        return f"Note: Device may be rebooting: {str(e)}"
 
 
 @mcp_server.tool(name="check_esp32_connection")
@@ -236,30 +316,36 @@ async def check_esp32_connection(
     port: Optional[int] = None,
 ) -> str:
     """
-    Check connectivity to the ESP32 camera device.
+    Check connectivity and basic status of the ESP32 camera device.
     
     Args:
         host: ESP32 device IP address (default: 192.168.1.100)
         port: ESP32 web server port (default: 80)
         
     Returns:
-        Connection status message
+        Connection status message with device information
     """
     if host is None:
         host = ESP32_DEFAULT_HOST
     if port is None:
         port = ESP32_DEFAULT_PORT
     
-    url = get_esp32_url(host, port)
+    url = get_esp32_url(host, port) + ESP32_ENDPOINTS["metadata"]
     
     try:
         async with httpx.AsyncClient(timeout=5) as client:
             response = await client.get(url)
-            return f"✓ ESP32 camera is online at {host}:{port} (HTTP {response.status_code})"
+            response.raise_for_status()
+            
+            metadata = response.json()
+            device_id = metadata.get("device_id", "unknown")
+            status = metadata.get("status", "unknown")
+            
+            return f"ESP32 camera '{device_id}' is online at {host}:{port} - Status: {status}"
             
     except httpx.ConnectError:
-        return f"✗ Cannot connect to ESP32 camera at {host}:{port}"
+        return f"Cannot connect to ESP32 camera at {host}:{port}"
     except httpx.TimeoutException:
-        return f"✗ Connection timeout to ESP32 camera at {host}:{port}"
+        return f"Connection timeout to ESP32 camera at {host}:{port}"
     except Exception as e:
-        return f"✗ Error connecting to ESP32 camera: {str(e)}"
+        return f"Error connecting to ESP32 camera: {str(e)}"

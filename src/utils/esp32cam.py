@@ -9,9 +9,13 @@ ESP32_DEFAULT_PORT = 80
 
 # ESP32 Web Server Endpoints
 ESP32_ENDPOINTS = {
-    "capture": "/_capture",      # Capture single image
-    "prompt": "/_prompt",         # Save/load image and settings
-    "stream": "/_stream",         # Stream live MJPEG video
+    "metadata": "/api/camera",                  # GET camera metadata and status
+    "control": "/api/camera/control",           # POST camera settings control
+    "reboot": "/api/camera/reboot",             # POST reboot device
+    "sdcard_save": "/api/camera/sdcard/save",   # POST save image to SD card
+    "sdcard_list": "/api/camera/sdcard/list",   # GET list SD card files
+    "stream": "/_stream",                       # MJPEG stream
+    "capture": "/_capture",                     # Capture single image
 }
 
 # Common Camera Settings (OV2640 sensor values)
