@@ -16,11 +16,6 @@ from src.utils.esp32cam import (
     ESP32_DEFAULT_HOST,
     ESP32_DEFAULT_PORT,
     ESP32_ENDPOINTS,
-    CAMERA_FRAMESIZE,
-    CAMERA_QUALITY,
-    CAMERA_BRIGHTNESS,
-    CAMERA_CONTRAST,
-    CAMERA_SATURATION
 )
 
 from src.utils.esp32cam import get_esp32_url
@@ -65,19 +60,29 @@ async def get_camera_metadata(
             # Save camera metadata to database
             if save_to_db:
                 device_id = metadata.get("device_id", "camera_unknown")
+                status = metadata.get("status", "unknown")
+                flash_status = metadata.get("flash", "off")
+                sd_card_status = metadata.get("sd_card", "unknown")
                 current_config = metadata.get("current_config", {})
-                sd_info = metadata.get("sd_info", {})
-                
+                sd_used = metadata.get("sd_used", {})
+                sd_total = metadata.get("sd_total", {})
+
                 write_camera_data(
                     device_id=device_id,
+                    status=status,
+                    flash_status=flash_status,
+                    sd_card_status=sd_card_status,
+
+                    sd_used=sd_used,
+                    sd_total=sd_total,
+
                     framesize=current_config.get("framesize", "UNKNOWN"),
                     quality=current_config.get("quality", 0),
                     brightness=current_config.get("brightness", 0),
                     contrast=current_config.get("contrast", 0),
-                    flash_status=metadata.get("flash", "off"),
-                    sd_used=sd_info.get("used"),
-                    sd_total=sd_info.get("total"),
-                    zone=metadata.get("zone"),
+                    vflip=current_config.get("vflip", False),
+                    hmirror=current_config.get("hmirror", False),
+
                     timestamp=datetime.utcnow()
                 )
                 logger.info(f"Saved camera metadata for {device_id} to database")
@@ -253,7 +258,7 @@ async def save_image_to_sdcard(
             if save_to_db:
                 device_id = result.get("device_id", "camera_unknown")
                 filename = result.get("filename", "unknown")
-                filesize = result.get("filesize", 0)
+                filesize = result.get("size", 0)
                 
                 write_sensor_data(
                     device_id=device_id,

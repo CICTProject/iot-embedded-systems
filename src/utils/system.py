@@ -124,14 +124,20 @@ def write_ecg_data(
 
 def write_camera_data(
     device_id: str,
-    framesize: str,
-    quality: int,
-    brightness: int,
-    contrast: int,
-    flash_status: str = "off",
+    status: str,
+    flash_status: str,
+    sd_card_status: str,
+
     sd_used: Optional[int] = None,
     sd_total: Optional[int] = None,
-    zone: Optional[str] = None,
+
+    framesize: str = "UNKNOWN",
+    quality: int = 0,
+    brightness: int = 0,
+    contrast: int = 0,
+    vflip: bool = False,
+    hmirror: bool = False,
+
     timestamp: Optional[datetime] = None,
 ) -> bool:
     """
@@ -139,14 +145,21 @@ def write_camera_data(
     
     Args:
         device_id: Camera device identifier
+        status: Overall camera status (e.g., 'active', 'disabled')
+        flash_status: Flash status ('on' or 'off')
+        sd_card_status: SD card status ('mounted', 'not_found')
+
+        sd_used: SD card bytes used (optional)
+        sd_total: SD card total bytes (optional)
+
+
         framesize: Frame size setting (e.g., 'VGA', 'QVGA', 'UXGA')
         quality: Quality setting (0-63, lower = better)
         brightness: Brightness level (-2 to 2)
         contrast: Contrast level (-2 to 2)
-        flash_status: Flash status ('on' or 'off')
-        sd_used: SD card bytes used (optional)
-        sd_total: SD card total bytes (optional)
-        zone: Physical zone/location of camera
+        vflip: Vertical flip status (True/False)
+        hmirror: Horizontal mirror status (True/False)
+
         timestamp: Timestamp for the measurement
         
     Returns:
@@ -165,12 +178,18 @@ def write_camera_data(
         point = (
             Point("camera_status")
             .tag("device_id", device_id)
+            .tag("status", status)
             .tag("flash", flash_status)
+            .tag("sd_card", sd_card_status)
             .tag(**tags)
+
             .field("framesize", framesize)
             .field("quality", int(quality))
             .field("brightness", int(brightness))
             .field("contrast", int(contrast))
+            .field("vflip", bool(vflip))
+            .field("hmirror", bool(hmirror))
+
             .time(timestamp)
         )
         

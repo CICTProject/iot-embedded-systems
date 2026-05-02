@@ -1,0 +1,87 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API documentation for the IoT Embedded Systems project.",
+        "version": "1.0.0",
+        "title": "IoT Embedded Systems API"
+    },
+    "host": "localhost:8000",
+    "basePath": "/api/v1",
+    "schemes": [
+        "http"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
+        }
+    },
+    "paths": {
+        "/chat/completions": {
+            "post": {
+                "summary": "Handle chat interactions with the AI assistant.",
+                "description": "Endpoint to send user messages and receive AI responses. Supports both streaming and non-streaming responses.",
+                "operationId": "chat",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response with AI answer.",
+                        "schema": {
+                            "$ref": "#/definitions/ChatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request due to invalid input."
+                    },
+                    "500": {
+                        "description": "Internal server error."
+                    }
+                },
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ]
+            }
+        },
+        "/models": {
+            "get": {
+                "summary": "Retrieve a list of available AI models.",
+                "description": "Endpoint to get information about all AI models that can be used for chat interactions.",
+                "operationId": "getModels",
+                "responses": {
+                    "200": {
+                        "description": "Successful response with list of models.",
+                        "schema": {
+                            "$ref": "#/definitions/ModelsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error."
+                    }
+                },
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ]
+            }
+        }
+    }
+}

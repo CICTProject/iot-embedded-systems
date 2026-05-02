@@ -9,6 +9,33 @@ Modern medical research laboratories have integrated gradually into smart worksp
 *Figure 1: Fall detection in nursing home scenario.*
 
 ---
+## Basic Flow: From LLM User Intent to IOT device deployment control.
+The deployment monitoring agent (Figure 2) is responsible for maintaining an up-to-date data structure that records the status of each device and its connectivity. 
+![Deployment Agent Workflow](docs/llm/workflow.png)
+*Figure 2: IOT Deployment Agent Workflow with specific examples.*
+### 1. LLM to MCP (Tool Registration)
+- LLM Deployment Agent maintains real-time data structures for all deployed devices with unique identifiers. For each ESP32-based device, some information details such as registered microservices (`/camera`, `/sensor`, etc.), communication protocols (HTTP, MQTT, CoAP), and service-specific metadata (e.g., camera FoV, detection area, resolution, sampling frequency).
+
+- MCP Server tools are registered in the agent and correspond to network operations, current tools are, with full CRUD (create, read, update and delete) functionality.
+
+Open WebUI (Future replacement with Shacdn256/Boostrap Fontend) has supported 2 LLMs model (OpenAI, Ollama), implement FastAPIs to retrieve model & chat information with LLM agents, all the API docs in http://localhost:8001/docs#/ with the launching interface in http://localhost:8001 for local version, further deploy in Vercel.
+
+| Demo | Version | Workflow Video   | Description |
+|------|---------|------------------|-------------|
+| LLM Demo View | v1.0.1            | [![Thumbnail](https://img.youtube.com/vi/E6YcugELNrc/maxresdefault.jpg)](https://youtu.be/E6YcugELNrc) | Initial Project Demo in IOT deployment scenario |
+| LLM ECG Device Control Demo       | v1.0.2 | [![Thumbnail](https://img.youtube.com/vi/Og8NFQ0c9E4/maxresdefault.jpg)](https://youtube.com/shorts/0kfecH5nJ6I?feature=share) | Round 1 Demo in ECG device control of IOT deployment scenario |
+
+### 2. MCP to ESP32 (FastAPI Bridge)
+
+- MCP server (`src/mcp_server/`) receives tool calls from the agent and maps them to REST endpoints. FastAPI clients translate LLM-generated tool calls into HTTP requests targeting actual ESP32 devices via deployment endpoints (`/api/deploy`, `/api/control`, `/api/status`). All service details (**devices**, etc) documented in `swagger.json`.
+
+> **Note:** Some tools and API mappings are under development, see more in `src/mcp_server` for tool registration.
+
+### 3. ESP32-based Execution (Device layer)
+
+- ESP32-based device (ESP32 CAM, ECG sensors) receives deployment instructions, loads camera-based fall detection models, configures inference pipelines, and executes real-time monitoring workflows. Device details (IP address, device status (active, inactive, idle, sleep, deep sleep), location coordinates (x, y, z)) streamed back to FastAPI for InfluxDB database retrieve, with the implementations in `esp32/` for resource-constrained devices.
+
+---
 
 ## Project Structure
 
@@ -60,32 +87,6 @@ from(bucket: "medical_sensors")
   |> range(start: -30d)
   |> limit(n: 50)
 ```
-
----
-## Basic Flow: From LLM User Intent to IOT device deployment control.
-The deployment monitoring agent (Figure 2) is responsible for maintaining an up-to-date data structure that records the status of each device and its connectivity. 
-![Deployment Agent Workflow](docs/llm/workflow.png)
-*Figure 2: IOT Deployment Agent Workflow with specific examples.*
-### 1. LLM to MCP (Tool Registration)
-- LLM Deployment Agent maintains real-time data structures for all deployed devices with unique identifiers. For each ESP32-based device, some information details such as registered microservices (`/camera`, `/sensor`, etc.), communication protocols (HTTP, MQTT, CoAP), and service-specific metadata (e.g., camera FoV, detection area, resolution, sampling frequency).
-
-- MCP Server tools are registered in the agent and correspond to network operations, current tools are, with full CRUD (create, read, update and delete) functionality.
-
-Open WebUI (Future replacement with Shacdn256/Boostrap Fontend) has supported 2 LLMs model (OpenAI, Ollama), implement FastAPIs to retrieve model & chat information with LLM agents, all the API docs in http://localhost:8001/docs#/ with the launching interface in http://localhost:8001 for local version, further deploy in Vercel.
-
-[![LLM Demo View](https://img.youtube.com/vi/E6YcugELNrc/maxresdefault.jpg)](https://youtu.be/E6YcugELNrc)
-
-*Prototype Alpha v1.0.1: Workflow Demo in IOT deployment scenario*
-
-### 2. MCP to ESP32 (FastAPI Bridge)
-
-- MCP server (`src/mcp_server/`) receives tool calls from the agent and maps them to REST endpoints. FastAPI clients translate LLM-generated tool calls into HTTP requests targeting actual ESP32 devices via deployment endpoints (`/api/deploy`, `/api/control`, `/api/status`). All service details (**devices**, etc) documented in `swagger.json`.
-
-> **Note:** Some tools and API mappings are under development, see more in `src/mcp_server` for tool registration.
-
-### 3. ESP32-based Execution (Device layer)
-
-- ESP32-based device (ESP32 CAM, ECG sensors) receives deployment instructions, loads camera-based fall detection models, configures inference pipelines, and executes real-time monitoring workflows. Device details (IP address, device status (active, inactive, idle, sleep, deep sleep), location coordinates (x, y, z)) streamed back to FastAPI for InfluxDB database retrieve, with the implementations in `esp32/` for resource-constrained devices.
 
 ---
 
