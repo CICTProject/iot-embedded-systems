@@ -18,7 +18,7 @@ The deployment monitoring agent (Figure 2) is responsible for maintaining an up-
 
 - MCP Server tools are registered in the agent and correspond to network operations, current tools are, with full CRUD (create, read, update and delete) functionality.
 
-> [!INFO]
+> [!NOTE]
 > Open WebUI (Future replacement with Shacdn256/Boostrap Fontend) has supported 2 LLMs model (OpenAI, Ollama), implement FastAPIs to retrieve model & chat information with LLM agents, all the API docs in http://localhost:8001/docs#/ with the launching interface in http://localhost:8001 for local version, further deploy in Vercel.
 
 | Demo | Version | Workflow Video   | Description |
@@ -82,7 +82,7 @@ uv sync  # WebUI package
 uv run --with open-webui open-webui serve
 poetry run uvicorn src.main:app --host 0.0.0.0 --port 8001
 ```
-> [!TIPS]
+> [!TIP]
 > Our project prioritizes the use of InfluxDB as it enables high-throughput ingestion, efficient storage, and time-based querying of large-scale time-series IOT device data with open UI web browser in http://localhost:8086. Data query format in InfluxDB:
 
 ```bash
