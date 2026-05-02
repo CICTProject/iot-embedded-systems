@@ -9,5 +9,4 @@ mcp_server = FastMCP("MCP Server")
 
 # Import all task modules to register their tools with the shared server
 from . import camera 
-from . import system
 from . import ecg

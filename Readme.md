@@ -44,7 +44,6 @@ iot-embedded-systems/
 # Dependencies installation fully pinned via poetry.lock (deployment lock standard)
 poetry install --no-root
 uv sync  # WebUI package 
-poetry run python src/db/main.py # Seed database mitigation (Future replacement with real-time iot device data)
 ```
 
 ### Running the Application (LLM User Intent)
@@ -129,7 +128,3 @@ Open WebUI (Future replacement with Shacdn256/Boostrap Fontend) has supported 2 
 11. ESP3 CAM-MB-USB: [esp32camusb.com/docs](https://randomnerdtutorials.com/upload-code-esp32-cam-mb-usb/)
 12. ESP32 CAM Video Streaming: [esp32camfunctionality.com/docs](https://lastminuteengineers.com/getting-started-with-esp32-cam/)
 
----
-## Future Work
-- Implement deployment algorithms & test case in camera-based scenarios.
-- Develop & Integrate with medical sensors & ESP32 CAM.

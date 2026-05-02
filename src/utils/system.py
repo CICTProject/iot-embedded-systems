@@ -1,113 +1,196 @@
 # System-related tools for device registry and monitoring.
 from typing import Any, Dict, List, Optional
 from src.db.database import get_db_client
+from datetime import datetime
+from influxdb_client.client.write.point import Point
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-def get_device_from_registry(device_id: str) -> Optional[Dict[str, Any]]:
-    """Query device registry from InfluxDB."""
-    db_client = get_db_client()
-    query_api = db_client.get_query_client()
+def write_sensor_data(
+    device_id: str,
+    metric: str,
+    value: float,
+    unit: str = "",
+    quality: int = 100,
+    tags: Optional[Dict[str, str]] = None,
+    timestamp: Optional[datetime] = None,
+) -> bool:
+    """
+    Write a single sensor measurement to InfluxDB.
     
-    query = f'''
-        from(bucket: "{db_client.bucket}")
-            |> range(start: -30d)
-            |> filter(fn: (r) => r._measurement == "device_registry")
-            |> filter(fn: (r) => r.device_id == "{device_id}")
-            |> last()
-    '''
-    
+    Args:
+        device_id: Unique device identifier
+        metric: Metric/sensor kind name (e.g., 'heart_rate', 'ecg', 'camera_frame')
+        value: Numeric measurement value
+        unit: Unit of measurement (e.g., 'bpm', 'mV', 'frame')
+        quality: Data quality score (0-100, default: 100)
+        tags: Additional tags for filtering and organizing data
+        timestamp: Timestamp for the measurement (default: current time)
+        
+    Returns:
+        True if write successful, False otherwise
+    """
     try:
-        result = query_api.query(query)
-        if result and len(result) > 0:
-            records = result[0].records
-            if records:
-                record = records[0]
-                return {
-                    "device_id": record.values.get("device_id"),
-                    "device_type": record.values.get("device_type"),
-                    "name": record.values.get("name"),
-                    "status": record.values.get("status"),
-                    "ip_address": record.values.get("ip_address"),
-                    "battery_level": record.values.get("battery_level"),
-                    "protocol": record.values.get("protocol"),
-                }
-        return None
+        db_client = get_db_client()
+        write_api = db_client.get_write_client()
+        
+        if timestamp is None:
+            timestamp = datetime.utcnow()
+        
+        # Build the data point
+        point = (
+            Point("medical_reading")
+            .tag("device_id", device_id)
+            .tag("metric", metric)
+            .field("value", float(value))
+            .field("quality", int(quality))
+            .field("unit", unit)
+        )
+        
+        # Add optional tags
+        if tags:
+            for key, val in tags.items():
+                point.tag(key, str(val))
+        
+        # Set timestamp
+        point.time(timestamp)
+        
+        # Write to InfluxDB
+        write_api.write(bucket=db_client.bucket, org=db_client.org, record=point)
+        
+        logger.info(
+            "Successfully wrote sensor data - device_id=%s, metric=%s, value=%s, timestamp=%s",
+            device_id, metric, value, timestamp
+        )
+        return True
+        
     except Exception as e:
-        logger.error("Error querying device registry: %s", e)
-        return None
+        logger.error("Error writing sensor data: %s", e)
+        return False
 
-
-def list_all_devices_from_registry() -> List[Dict[str, Any]]:
-    """Query all devices from InfluxDB registry."""
-    db_client = get_db_client()
-    query_api = db_client.get_query_client()
+def write_ecg_data(
+    device_id: str,
+    metric: str,
+    value: float,
+    unit: str = "mV",
+    status: str = "unknown",
+    timestamp: Optional[datetime] = None,
+) -> bool:
+    """
+    Write ECG data to database.
     
-    query = f'''
-        from(bucket: "{db_client.bucket}")
-            |> range(start: -30d)
-            |> filter(fn: (r) => r._measurement == "device_registry")
-            |> last()
-    '''
-    
-    devices = []
+    Args:
+        device_id: ECG device identifier
+        metric: Metric name (e.g., 'ecg_raw')
+        value: Numeric measurement value
+        unit: Unit of measurement (default: 'mV' for ECG, 'bpm' for heart rate)
+        status: Status of the ECG reading (e.g., 'normal', 'arrhythmia', 'artifact')
+        timestamp: Timestamp for the measurement (default: current time)
+    Returns:
+        True if write successful, False otherwise
+    """
     try:
-        result = query_api.query(query)
-        if result:
-            for table in result:
-                for record in table.records:
-                    devices.append({
-                        "device_id": record.values.get("device_id"),
-                        "device_type": record.values.get("device_type"),
-                        "protocol": record.values.get("protocol"),
-                        "zone": record.values.get("zone"),
-                        "name": record.values.get("name"),
-                        "status": record.values.get("status"),
-                        "ip_address": record.values.get("ip_address"),
-                        "battery_level": record.values.get("battery_level"),
-                        "services_count": record.values.get("services_count", 0),
-                    })
+        db_client = get_db_client()
+        write_api = db_client.get_write_client()
+        
+        if timestamp is None:
+            timestamp = datetime.utcnow()
+        
+        # Write ECG data point
+        
+        ecg_point = (
+            Point("medical_reading")
+            .tag("device_id", device_id)
+            .field("metric", metric)
+            .field("value", float(value))
+            .field("status", status)
+            .field("unit", unit)
+            .time(timestamp)
+        )
+        
+        write_api.write(bucket=db_client.bucket, org=db_client.org, record=ecg_point)
+        
+        logger.info(
+            "Successfully wrote ECG data - device_id=%s, metric=%s, value=%s, timestamp=%s",
+            device_id, metric, value, timestamp
+        )
+        return True
+        
     except Exception as e:
-        logger.error("Error querying device registry: %s", e)
-    
-    return devices
+        logger.error("Error writing ECG data: %s", e)
+        return False
 
-
-def get_metric_readings(
-    device_id: str, 
-    metric: Optional[str] = None,
-    hours: int = 24,
-) -> List[Dict[str, Any]]:
-    """Query metric readings from InfluxDB."""
-    db_client = get_db_client()
-    query_api = db_client.get_query_client()
+def write_camera_data(
+    device_id: str,
+    framesize: str,
+    quality: int,
+    brightness: int,
+    contrast: int,
+    flash_status: str = "off",
+    sd_used: Optional[int] = None,
+    sd_total: Optional[int] = None,
+    zone: Optional[str] = None,
+    timestamp: Optional[datetime] = None,
+) -> bool:
+    """
+    Write camera metadata and status to InfluxDB.
     
-    metric_filter = f'|> filter(fn: (r) => r.metric == "{metric}")' if metric else ''
-    
-    query = f'''
-        from(bucket: "{db_client.bucket}")
-            |> range(start: -{hours}h)
-            |> filter(fn: (r) => r._measurement == "medical_reading")
-            |> filter(fn: (r) => r.device_id == "{device_id}")
-            {metric_filter}
-    '''
-    
-    readings = []
+    Args:
+        device_id: Camera device identifier
+        framesize: Frame size setting (e.g., 'VGA', 'QVGA', 'UXGA')
+        quality: Quality setting (0-63, lower = better)
+        brightness: Brightness level (-2 to 2)
+        contrast: Contrast level (-2 to 2)
+        flash_status: Flash status ('on' or 'off')
+        sd_used: SD card bytes used (optional)
+        sd_total: SD card total bytes (optional)
+        zone: Physical zone/location of camera
+        timestamp: Timestamp for the measurement
+        
+    Returns:
+        True if write successful, False otherwise
+    """
     try:
-        result = query_api.query(query)
-        if result:
-            for table in result:
-                for record in table.records:
-                    readings.append({
-                        "device_id": device_id,
-                        "metric": record.values.get("metric"),
-                        "value": record.values.get("_value"),
-                        "quality": record.values.get("quality"),
-                        "timestamp": record.get_time().isoformat() if record.get_time() else None,
-                    })
+        db_client = get_db_client()
+        write_api = db_client.get_write_client()
+        
+        if timestamp is None:
+            timestamp = datetime.utcnow()
+        
+        tags = {"zone": zone} if zone else {}
+        
+        # Write camera configuration point
+        point = (
+            Point("camera_status")
+            .tag("device_id", device_id)
+            .tag("flash", flash_status)
+            .tag(**tags)
+            .field("framesize", framesize)
+            .field("quality", int(quality))
+            .field("brightness", int(brightness))
+            .field("contrast", int(contrast))
+            .time(timestamp)
+        )
+        
+        # Add optional SD card metrics
+        if sd_used is not None:
+            point.field("sd_used_bytes", int(sd_used))
+        if sd_total is not None:
+            point.field("sd_total_bytes", int(sd_total))
+            if sd_used is not None:
+                sd_percent = (sd_used / sd_total * 100) if sd_total > 0 else 0
+                point.field("sd_usage_percent", float(sd_percent))
+        
+        write_api.write(bucket=db_client.bucket, org=db_client.org, record=point)
+        
+        logger.info(
+            "Successfully wrote camera data - device_id=%s, framesize=%s, quality=%s, timestamp=%s",
+            device_id, framesize, quality, timestamp
+        )
+        return True
+        
     except Exception as e:
-        logger.error("Error querying readings: %s", e)
-    
-    return readings
+        logger.error("Error writing camera data: %s", e)
+        return False

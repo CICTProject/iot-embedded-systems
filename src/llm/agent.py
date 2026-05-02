@@ -47,7 +47,7 @@ class LLMAgent:
         if not response_text:
             return "No response from LLM."
 
-        action = self._parse_action(response_text)
+        action = self.parse_action(response_text)
         if not action:
             return f"Could not parse response: {response_text}"
 
@@ -58,9 +58,9 @@ class LLMAgent:
             return action.get("message", response_text)
         
         # execute tool
-        return await self._execute_action(action)
+        return await self.execute_action(action)
         
-    def _parse_action(self, response: str) -> dict | None:
+    def parse_action(self, response: str) -> dict | None:
         """Extract JSON action from LLM response with error correction."""
         # Try direct JSON parse first
         try:
@@ -110,7 +110,7 @@ class LLMAgent:
         except Exception as e:
             return {"tool": "none", "message": str(response)}
 
-    async def _execute_action(self, action: dict) -> str:
+    async def execute_action(self, action: dict) -> str:
         """Execute the requested tool action."""
         tool_name = action.get("tool")
         params = action.get("params", {})

@@ -8,6 +8,7 @@ import httpx
 import json
 from pathlib import Path
 from typing import Optional, Any
+from datetime import datetime
 from mcp.types import Tool, TextContent, ImageContent
 from . import mcp_server
 
@@ -23,12 +24,18 @@ from src.utils.esp32cam import (
 )
 
 from src.utils.esp32cam import get_esp32_url
+from src.utils.system import write_camera_data, write_sensor_data
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @mcp_server.tool(name="get_camera_metadata")
 async def get_camera_metadata(
     host: Optional[str] = None,
     port: Optional[int] = None,
+    save_to_db: bool = True,
 ) -> str:
     """
     Get current camera metadata and status including device info, settings, and endpoints.
@@ -36,6 +43,7 @@ async def get_camera_metadata(
     Args:
         host: ESP32 device IP address (default: 192.168.1.100)
         port: ESP32 web server port (default: 80)
+        save_to_db: Whether to save camera status to database (default: True)
         
     Returns:
         JSON string containing camera metadata, current configuration, and available endpoints
@@ -53,6 +61,27 @@ async def get_camera_metadata(
             response.raise_for_status()
             
             metadata = response.json()
+            
+            # Save camera metadata to database
+            if save_to_db:
+                device_id = metadata.get("device_id", "camera_unknown")
+                current_config = metadata.get("current_config", {})
+                sd_info = metadata.get("sd_info", {})
+                
+                write_camera_data(
+                    device_id=device_id,
+                    framesize=current_config.get("framesize", "UNKNOWN"),
+                    quality=current_config.get("quality", 0),
+                    brightness=current_config.get("brightness", 0),
+                    contrast=current_config.get("contrast", 0),
+                    flash_status=metadata.get("flash", "off"),
+                    sd_used=sd_info.get("used"),
+                    sd_total=sd_info.get("total"),
+                    zone=metadata.get("zone"),
+                    timestamp=datetime.utcnow()
+                )
+                logger.info(f"Saved camera metadata for {device_id} to database")
+            
             return json.dumps(metadata, indent=2)
             
     except httpx.ConnectError:
@@ -193,6 +222,7 @@ async def get_stream_url(
 async def save_image_to_sdcard(
     host: Optional[str] = None,
     port: Optional[int] = None,
+    save_to_db: bool = True,
 ) -> str:
     """
     Capture and save current image to SD card on the ESP32 device.
@@ -200,6 +230,7 @@ async def save_image_to_sdcard(
     Args:
         host: ESP32 device IP address (default: 192.168.1.100)
         port: ESP32 web server port (default: 80)
+        save_to_db: Whether to record the capture event in database (default: True)
         
     Returns:
         Status message with filename and size information
@@ -217,6 +248,26 @@ async def save_image_to_sdcard(
             response.raise_for_status()
             
             result = response.json()
+            
+            # Record capture event to database
+            if save_to_db:
+                device_id = result.get("device_id", "camera_unknown")
+                filename = result.get("filename", "unknown")
+                filesize = result.get("filesize", 0)
+                
+                write_sensor_data(
+                    device_id=device_id,
+                    metric="frame_capture",
+                    value=float(filesize),
+                    unit="bytes",
+                    tags={
+                        "filename": filename,
+                        "type": "image_capture"
+                    },
+                    timestamp=datetime.utcnow()
+                )
+                logger.info(f"Recorded frame capture for {device_id}: {filename} ({filesize} bytes)")
+            
             return json.dumps(result, indent=2)
             
     except httpx.ConnectError:
