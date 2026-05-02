@@ -29,7 +29,8 @@ Open WebUI (Future replacement with Shacdn256/Boostrap Fontend) has supported 2 
 
 - MCP server (`src/mcp_server/`) receives tool calls from the agent and maps them to REST endpoints. FastAPI clients translate LLM-generated tool calls into HTTP requests targeting actual ESP32 devices via deployment endpoints (`/api/deploy`, `/api/control`, `/api/status`). All service details (**devices**, etc) documented in `swagger.json`.
 
-> **Note:** Some tools and API mappings are under development, see more in `src/mcp_server` for tool registration.
+> [!IMPORTANT]
+> Some tools and API mappings are under development, see more in `src/mcp_server` for tool registration.
 
 ### 3. ESP32-based Execution (Device layer)
 
@@ -80,7 +81,8 @@ uv sync  # WebUI package
 uv run --with open-webui open-webui serve
 poetry run uvicorn src.main:app --host 0.0.0.0 --port 8001
 ```
-> **Note:** Our project prioritizes the use of InfluxDB as it enables high-throughput ingestion, efficient storage, and time-based querying of large-scale time-series IOT device data with open UI web browser in http://localhost:8086. Data query format in InfluxDB:
+> [!TIPS]
+> Our project prioritizes the use of InfluxDB as it enables high-throughput ingestion, efficient storage, and time-based querying of large-scale time-series IOT device data with open UI web browser in http://localhost:8086. Data query format in InfluxDB:
 
 ```bash
 from(bucket: "medical_sensors")
